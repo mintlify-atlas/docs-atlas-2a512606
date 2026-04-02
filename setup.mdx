@@ -1,0 +1,84 @@
+---
+title: "First-time setup"
+description: "Connecting Announcement Window+ to Dwarf Fortress after installation, and an overview of the two-pane layout and available configuration options."
+---
+
+After installing Announcement Window+ and configuring DFHack, you need to point the application at the `annc.log` file in your Dwarf Fortress directory. This only needs to be done once — the path is saved to `settings.cfg` and reloaded on every subsequent launch.
+
+## Connect to Dwarf Fortress
+
+<Steps>
+  <Step title="Start a fortress in Dwarf Fortress">
+    Load an existing fortress or start a new one. DFHack will create `annc.log` in your Dwarf Fortress install directory the first time it processes an announcement event. The file will not exist until you have loaded a map at least once.
+
+    <Note>
+      If you open Announcement Window+ before starting a fortress, the application will launch normally but will not display any announcements until it finds `annc.log`.
+    </Note>
+  </Step>
+  <Step title="Open Announcement Window+">
+    Launch `AnnouncementWindow.exe` (Windows) or run `python run.py` from the repository directory.
+  </Step>
+  <Step title="Set the log directory">
+    In the menu bar, click **Settings → Set Directory**. A file browser will open. Navigate to your Dwarf Fortress install folder and select `annc.log`.
+
+    The path is saved immediately to `settings.cfg`. Announcement Window+ will reconnect to the file and begin displaying announcements.
+  </Step>
+</Steps>
+
+## Manual path configuration
+
+If you prefer to set the path before launching the application, open `settings.cfg` in a text editor and set the `gamelog_path` variable directly:
+
+```ini
+[Settings]
+gamelog_path = C:\Program Files (x86)\Steam\steamapps\common\Dwarf Fortress\annc.log
+```
+
+Save the file and launch Announcement Window+. It will connect to the specified path on startup.
+
+## The two-pane layout
+
+Announcement Window+ displays two independent text panes, stacked vertically. A draggable divider between them lets you resize each pane. The divider position is saved automatically when you close the application.
+
+Each pane operates independently:
+
+- Filters are configured per-pane. An announcement visible in Window 1 may be hidden in Window 2, and vice versa.
+- Scrolling in one pane does not affect the other.
+- Each pane auto-scrolls to the latest announcement when the scrollbar is at the bottom. If you scroll up to review older entries, auto-scroll pauses until you return to the bottom.
+- Font and size are set independently per pane.
+
+<Note>
+  A typical setup is to show general announcements (tag `a`) in Window 1 and combat reports (tag `r`) in Window 2, so you can monitor both streams simultaneously without pausing the game.
+</Note>
+
+## Right-click context menu
+
+Right-clicking on either pane opens a context menu for that pane with the following options:
+
+| Option | Description |
+|---|---|
+| **Change Font** | Opens a font chooser dialog to set the typeface, size, weight, and style for that pane. The selection is saved automatically. |
+| **Toggle Tags** | Shows or hides the `[group][category]` tag prefix on each announcement. Useful for understanding how filters are applied and for building custom filters. |
+| **Clear Window** | Removes all announcements currently displayed in the pane. Does not affect the other pane or the underlying log file. |
+
+## Options menu
+
+The **Options** menu in the menu bar provides access to filter and settings management:
+
+| Option | Description |
+|---|---|
+| **Filter Configuration** | Opens the Filter Configuration dialog, where you can view and toggle which categories are shown in each window. |
+| **Edit filters.txt** | Opens `filters.txt` in your system's default text editor for manual editing of filter rules. |
+| **Reload wordcolor.txt** | Re-reads `wordcolor.txt` and applies any changes to word-level color highlighting without restarting the application. |
+| **Reload filters.txt** | Re-reads `filters.txt` and applies any changes to announcement categorization without restarting. |
+| **Reload Settings** | Re-reads `settings.cfg` and applies any changes to application settings without restarting. |
+
+## Lock window
+
+**Settings → Lock Window** toggles a mode that keeps Announcement Window+ always on top of all other windows and removes the title bar and window decorations, making it borderless. This is useful when you want the announcement feed visible over the game without it being obscured by other windows.
+
+To exit lock mode, click **Settings → Unlock Window**. On macOS, window decorations are not restored when unlocking, so this feature is most reliable on Windows.
+
+<Note>
+  The lock window feature uses `-topmost` window attribute on all platforms, and removes window decorations (`overrideredirect`) on Windows only.
+</Note>

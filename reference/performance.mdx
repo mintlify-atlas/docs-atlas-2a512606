@@ -1,0 +1,117 @@
+---
+title: "Performance and memory"
+description: How to tune Announcement Window+ for large fortresses and high-volume combat
+---
+
+Announcement Window+ is designed to run continuously alongside Dwarf Fortress. Under normal play it is lightweight, but certain scenarios — danger rooms, megabeast sieges, or very long sessions — can generate hundreds of announcements per second. This page explains how the application uses memory and CPU, and how to configure it for the best balance.
+
+---
+
+## Memory usage
+
+Every announcement is stored as a text object in memory for as long as its window is open. The total footprint grows with:
+
+- **Session length** — more time played means more announcements accumulated.
+- **Announcement volume** — combat-heavy situations (particularly training) generate many lines per second.
+- **Hidden announcements** — if `save_hidden_announcements = True`, hidden categories also accumulate in memory.
+
+<Tip>
+  Clearing both windows periodically — roughly once per hour during active play — releases accumulated text objects. Even in worst-case scenarios (danger rooms, full-scale sieges) this keeps RAM usage below approximately 150 MB.
+</Tip>
+
+---
+
+## trim_announcements in depth
+
+The `trim_announcements_0` and `trim_announcements_1` settings cap how many announcements are kept per category per window. This is the primary knob for controlling memory consumption.
+
+### How it works
+
+The limit applies **per category**, not per window total. For example, with `trim_announcements_0 = 2000`:
+
+- Up to 2,000 `[battle_minor][hitevents_miss]` lines are kept in Window 0.
+- Up to 2,000 `[battle_minor][block_dodge]` lines are kept separately.
+- As soon as the 2,001st line arrives in a category, the oldest line in that category is located and deleted.
+
+### Setting to 1 — live status display
+
+```ini
+trim_announcements_1 = 1
+```
+
+With a value of `1`, Window 1 shows only the **most recent** announcement per category. Older events are replaced as new ones arrive. This is useful for a status-at-a-glance display:
+
+- The `[weather][weather]` category shows the current weather condition.
+- The `[trading][trading]` category shows the most recent caravan or merchant event.
+- The `[seasons][seasons]` category shows the current season.
+
+### Trade-off: memory vs. CPU
+
+| Setting | Memory | CPU |
+|---|---|---|
+| `0` (unlimited) | Grows until window is cleared | Minimal — no deletion work |
+| Large value (e.g., `2000`) | Bounded | Low — deletion is rare |
+| Small value (e.g., `10`) | Very low | Higher — old lines found and deleted frequently |
+| `1` | Minimal | Highest per-announcement cost |
+
+<Tip>
+  For most play sessions, `trim_announcements_0 = 2000` is a good default. It bounds memory without noticeable CPU overhead, and you retain enough history to review recent events.
+</Tip>
+
+---
+
+## CPU usage
+
+<Note>
+  The application polls `annc.log` for new lines every **1,000 milliseconds** (from `Window.py`: `self.after(1000, self.get_announcements)`). Between polls the application is idle. There is no busy-wait loop.
+</Note>
+
+Dwarf Fortress itself runs on a single CPU core. On any modern multi-core system, Announcement Window+ occupies a separate core when it is active, so the two programs do not directly compete for CPU time.
+
+The main CPU cost inside the application is **trimming**: when `trim_announcements` is set to a low value, each new announcement requires a search through the text widget to locate and delete the oldest line in the same category. The lower the trim value, the more frequently this work occurs.
+
+---
+
+## Danger room scenario
+
+<Warning>
+  Combat training with a danger room generates large volumes of `battle_minor` spam. The `hitevents_miss`, `block_dodge`, and `status` categories can produce dozens of lines per second. Storing all of these with `trim_announcements = 0` will consume substantial RAM over the course of a training session.
+</Warning>
+
+### Recommended mitigations
+
+1. **Hide `battle_minor` categories** in both windows via the Filters Configuration dialog. With `save_hidden_announcements = False` (the default), hidden announcements are discarded and never stored.
+
+2. **Set a low trim value for Window 0** so that even if `battle_minor` is visible, its history is bounded:
+
+   ```ini
+   trim_announcements_0 = 500
+   ```
+
+3. **Use Window 1 as a status display** by setting its trim to `1`, so it shows only the latest event per category without accumulating history:
+
+   ```ini
+   trim_announcements_1 = 1
+   ```
+
+---
+
+## Recommended settings for long sessions
+
+The following configuration balances memory, CPU, and usability for long fortress play including danger room training:
+
+```ini
+[Settings]
+gamelog_path = C:\Program Files (x86)\Steam\steamapps\common\Dwarf Fortress\annc.log
+load_previous_announcements = False
+save_hidden_announcements = False
+trim_announcements_0 = 2000
+trim_announcements_1 = 1
+```
+
+With this configuration:
+
+- Window 0 retains up to 2,000 announcements per category — enough to review recent history without unbounded growth.
+- Window 1 shows only the latest event per category, acting as a live status panel.
+- Hidden categories are never stored, keeping memory usage low even if `battle_minor` is hidden.
+- Previous-session announcements are not loaded on startup, keeping the initial load fast.

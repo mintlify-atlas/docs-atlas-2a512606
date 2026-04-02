@@ -1,0 +1,131 @@
+---
+title: "Word Coloring"
+description: "Highlight specific words in announcements with custom colors by editing wordcolor.txt and defining color tags in Settings.cfg."
+---
+
+Word coloring lets you highlight individual words or phrases within announcement text. For example, you can make all instances of "cancels" appear in red, or color dwarf profession names to make combat reports easier to scan at a glance.
+
+## File format
+
+Word coloring is configured in `wordcolor.txt`. Each line follows this format:
+
+```text wordcolor.txt
+[group][colortag] "word,list,of,words"
+```
+
+| Part | Purpose |
+|---|---|
+| `[group]` | The same group tag used in `filters.txt`. Use `General` to apply highlighting across all announcement groups. |
+| `[colortag]` | A color name defined in the `[Colors]` section of `Settings.cfg`. |
+| `"word,list,of,words"` | A comma-separated list of words to highlight. Case-sensitive. |
+
+### Examples
+
+```text wordcolor.txt
+[General][red] "cancels,mandate"
+```
+
+```text wordcolor.txt
+[battle][green] "Urist McColored"
+[masterpiece][olive] "Urist McColored"
+```
+
+The first line highlights the words `cancels` and `mandate` in red for every announcement, regardless of group. The second and third lines highlight the same name in different colors depending on which group the announcement belongs to.
+
+## How group matching works
+
+When an announcement is displayed:
+
+1. The program looks up the announcement's group (from `filters.txt`).
+2. It checks `wordcolor.txt` for any words matching that specific group.
+3. It also checks the `General` group and applies those highlights to every announcement.
+
+Group-specific color entries supplement (and can override) General entries for the same word within that group.
+
+## Color tags
+
+<Tabs>
+  <Tab title="Default colors">
+    The following color tags are available out of the box. Their hex values come from the default `Settings.cfg` generated on first run.
+
+    | Tag | Foreground | Preview |
+    |---|---|---|
+    | `white` | `#FFFFFF` | White |
+    | `silver` | `#C0C0C0` | Silver |
+    | `gray` | `#808080` | Gray |
+    | `black` | `#000000` | Black |
+    | `red` | `#FF0000` | Red |
+    | `maroon` | `#d90000` | Dark red |
+    | `yellow` | `#FFFF00` | Yellow |
+    | `olive` | `#808000` | Olive |
+    | `lime` | `#00FF00` | Lime |
+    | `green` | `#008000` | Green |
+    | `aqua` | `#00FFFF` | Aqua |
+    | `teal` | `#008080` | Teal |
+    | `blue` | `#0080c0` | Blue |
+    | `navy` | `#5564ea` | Navy |
+    | `fuchsia` | `#FF00FF` | Fuchsia |
+    | `orange` | `#ff8000` | Orange |
+
+    You can change the hex value for any default color by editing its entry in the `[Colors]` section of `Settings.cfg`. All `wordcolor.txt` entries that reference that tag will pick up the new value automatically.
+  </Tab>
+  <Tab title="Custom colors">
+    To add a new color tag, open `Settings.cfg` and add a line under the `[Colors]` section:
+
+    ```ini Settings.cfg
+    [Colors]
+    default_background = #000000
+    my_custom_tag = #FF8C00 #1a1a1a
+    ```
+
+    The format for each entry is:
+
+    ```text
+    tagname = #foreground #background
+    ```
+
+    - `#foreground` — the text color (required).
+    - `#background` — the background highlight color (optional). If omitted, the `default_background` value is used.
+    - Both values accept short (`#RGB`) or long (`#RRGGBB`) hex notation.
+
+    Once defined, the tag name can be used in `wordcolor.txt`:
+
+    ```text wordcolor.txt
+    [General][my_custom_tag] "ImportantWord"
+    ```
+
+    <Note>
+    Color tag names in `wordcolor.txt` are case-sensitive and must match exactly what is defined in `Settings.cfg`.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Full wordcolor.txt example
+
+The default `wordcolor.txt` ships with extensive profession and race coloring under the `General` group. A small representative excerpt:
+
+```text wordcolor.txt
+[General][silver] "Miner"
+[General][yellow] "Woodworker,Carpenter,Bowyer,Woodcutter"
+[General][gray] "Metalsmith,Furnace Operator,Weaponsmith,Armorer"
+[General][lime] "Jeweler,Gem Cutter,Gem Setter"
+[General][red] "Dwarf,dwarf,Dwarven,dwarven"
+[General][yellow] "Human,human"
+[General][teal] "Elf,elf,Elven,elven"
+[General][green] "Goblin,goblin"
+
+[emotion][aqua] "enraptured,pleasure,very pleased,admirable,adoration,love"
+[emotion][green] "feel so good,excited,happy,content,satisfied,elated"
+[emotion][red] "angry,afraid,terrified,horrified,vengeful,outraged,loathing"
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Filters" icon="filter" href="/configuration/filters">
+    Control which announcements are shown and how they are grouped.
+  </Card>
+  <Card title="Settings" icon="gear" href="/configuration/settings">
+    Configure gamelog path, memory limits, and the full Colors section.
+  </Card>
+</CardGroup>

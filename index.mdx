@@ -1,97 +1,69 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Announcement Window+"
+description: "A Python desktop app that displays filtered Dwarf Fortress announcements and combat reports in a dedicated, customizable window — no more pausing the game."
 ---
 
-## Setting up
+Announcement Window+ reads your Dwarf Fortress game log in real time and surfaces announcements, combat reports, and events in a separate dual-pane window. Configure exactly which events appear in each pane, set custom colors by category, and highlight specific words — all without interrupting your fortress.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Download the Windows executable or run from Python source on any platform.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Setup" icon="gear" href="/setup">
+    Connect Announcement Window+ to your Dwarf Fortress install in a few steps.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Filters" icon="filter" href="/configuration/filters">
+    Control which announcements appear in each window using regex-based filters.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Word Coloring" icon="palette" href="/configuration/word-coloring">
+    Highlight specific words with custom foreground and background colors.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## How it works
 
-Everything you need to create world-class documentation.
+Announcement Window+ monitors your Dwarf Fortress `annc.log` file (written by DFHack) and categorizes every line using a set of regular expression filters. Each announcement is tagged with a **group** (for color) and a **category** (for per-window visibility control). You can show combat spam in one pane while keeping important alerts in the other.
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+<Steps>
+  <Step title="Enable DFHack logging">
+    Install DFHack and configure it to write announcements to `annc.log`. This gives Announcement Window+ a live feed of game events.
+  </Step>
+  <Step title="Install and launch">
+    Download the Windows release or run `python run.py` directly. The app opens with two announcement panes ready to use.
+  </Step>
+  <Step title="Connect to your fortress">
+    Click **Settings → Set Directory** and point the app at your `annc.log` file. Announcements start flowing immediately.
+  </Step>
+  <Step title="Customize filters and colors">
+    Right-click any window to toggle tags, change fonts, or open the Filter Configuration dialog to control exactly what appears in each pane.
+  </Step>
+</Steps>
 
-## Need inspiration?
+## Key features
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<CardGroup cols={2}>
+  <Card title="Dual-pane display" icon="table-columns">
+    Two independent windows — set one for announcements and one for live combat reports.
+  </Card>
+  <Card title="Regex-based filtering" icon="magnifying-glass">
+    Categorize every game event using standard Python regular expressions.
+  </Card>
+  <Card title="Per-window visibility" icon="eye">
+    Show or hide any announcement category independently in each pane.
+  </Card>
+  <Card title="Custom word highlighting" icon="highlighter">
+    Highlight words like "cancels" or "mandate" with configurable colors.
+  </Card>
+  <Card title="Font customization" icon="font">
+    Right-click any pane to change the font family, size, and style.
+  </Card>
+  <Card title="Window lock mode" icon="lock">
+    Pin the window always-on-top and remove borders for a clean overlay.
+  </Card>
+  <Card title="Session persistence" icon="floppy-disk">
+    Reload announcements from your last session when you reopen the app.
+  </Card>
+  <Card title="Memory management" icon="microchip">
+    Cap stored announcements per category to keep RAM usage low during long sessions.
+  </Card>
+</CardGroup>

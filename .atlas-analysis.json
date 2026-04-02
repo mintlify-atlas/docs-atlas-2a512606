@@ -1,0 +1,45 @@
+{
+  "projectType": "general",
+  "projectName": "Announcement Window+",
+  "projectDescription": "A Python desktop application that reads Dwarf Fortress game logs and displays filtered announcements and combat reports in a separate, customizable window.",
+  "theme": "almond",
+  "primaryColor": "#4680af",
+  "lightColor": "#f5e071",
+  "darkColor": "#c0d4dd",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": ["introduction", "installation", "setup"]
+      },
+      {
+        "group": "Configuration",
+        "pages": ["configuration/filters", "configuration/word-coloring", "configuration/settings"]
+      },
+      {
+        "group": "Reference",
+        "pages": ["reference/filter-format", "reference/settings-reference", "reference/performance"]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Real-time Dwarf Fortress announcement display in a separate window",
+    "Dual-pane display for announcements and combat reports simultaneously",
+    "Regex-based announcement filtering with customizable groups and categories",
+    "Per-window visibility toggle for each announcement category",
+    "Custom word highlighting with configurable foreground and background colors",
+    "Font and size customization per display window",
+    "Session persistence: reload previous announcements on startup",
+    "Memory management via announcement trimming per category",
+    "Always-on-top and borderless window lock mode",
+    "Cross-platform support (Windows, macOS, Linux) with Python 2.7+ and Python 3"
+  ],
+  "publicApiSurface": [
+    "run.py — entry point to launch the application",
+    "filters.txt — regex filter definitions: [group][category] \"expression\"",
+    "wordcolor.txt — word color definitions: [group][colortag] \"word,list\"",
+    "Settings.cfg — configuration file with gamelog_path, load_previous_announcements, save_hidden_announcements, trim_announcements_0/1, and [Colors] section",
+    "Data/filters.dat — persisted filter visibility state (JSON)",
+    "Data/gui.dat — persisted GUI layout (pickle)"
+  ]
+}

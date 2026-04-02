@@ -1,0 +1,132 @@
+---
+title: "Settings"
+description: "All available settings in Settings.cfg, including gamelog path, memory management, announcement loading behavior, and custom color definitions."
+---
+
+`Settings.cfg` is the main configuration file for Announcement Window+. It is created automatically the first time the application runs, pre-populated with default values. You can edit it in any text editor.
+
+<Note>
+You do not need to restart the application after editing `Settings.cfg`. Go to **Options → Reload Settings** to apply changes immediately.
+</Note>
+
+## Sample Settings.cfg
+
+```ini Settings.cfg
+[Settings]
+gamelog_path = C:\Program Files (x86)\Steam\steamapps\common\Dwarf Fortress\annc.log
+load_previous_announcements = False
+save_hidden_announcements = False
+trim_announcements_0 = 0
+trim_announcements_1 = 0
+
+[Colors]
+default_background = #000000
+white = #FFFFFF
+silver = #C0C0C0
+gray = #808080
+black = #000000
+red = #FF0000
+maroon = #d90000
+yellow = #FFFF00
+olive = #808000
+lime = #00FF00
+green = #008000
+aqua = #00FFFF
+teal = #008080
+blue = #0080c0
+navy = #5564ea
+fuchsia = #FF00FF
+orange = #ff8000
+```
+
+## [Settings] section
+
+<ParamField path="gamelog_path" type="string">
+  The absolute path to the Dwarf Fortress log file. In current DFHack setups this is `annc.log`; in older versions it was `gamelog.txt`. The path can contain spaces without quoting.
+
+  You can also set this via the GUI: go to **Settings → Set Directory** and browse to the file. The setting is saved to `Settings.cfg` automatically.
+
+  <Note>
+  If you launch Announcement Window+ from inside an [LNP (Lazy Newb Pack)](http://dwarffortresswiki.org/index.php/Utility:Lazy_Newb_Pack) utility folder, the application will attempt to locate `gamelog.txt` automatically by walking up the directory tree and searching for a folder matching `Dwarf Fortress x.xx.xx`. If found, `gamelog_path` is set to that file without any manual configuration.
+  </Note>
+</ParamField>
+
+<ParamField path="load_previous_announcements" type="boolean" default="False">
+  When `True`, the application loads all announcements from the log file that occurred since the **last fortress load** when it starts up. This is useful for reviewing what happened during a session you missed.
+
+  If you start the application before loading a fortress, it will load announcements from your previous game session.
+</ParamField>
+
+<ParamField path="save_hidden_announcements" type="boolean" default="False">
+  When `True`, the application stores every announcement in memory even if it is not currently shown in any window (because its category is toggled off).
+
+  This uses more memory and CPU, but allows you to retroactively reveal hidden announcements. For example, if combat announcements were hidden during a megabeast attack, enabling their visibility later will still show the full play-by-play.
+
+  When `False`, announcements that do not match any visible category are discarded immediately and cannot be recovered.
+</ParamField>
+
+<ParamField path="trim_announcements_0" type="integer" default="0">
+  Memory limit for window 0. Sets the maximum number of announcements kept in memory **per category** for the first display window.
+
+  A value of `0` keeps all announcements until you manually clear the window. A positive integer (for example, `2000`) causes the oldest announcement of that category to be discarded once the limit is reached.
+
+  Setting this to `1` makes window 0 display only the most recent event per category, effectively showing a live "latest status" feed. For example, "A caravan from the Mountainhomes has arrived" would be replaced by "Merchants have arrived and are unloading their goods" once they reach the depot.
+</ParamField>
+
+<ParamField path="trim_announcements_1" type="integer" default="0">
+  Memory limit for window 1. Behaves identically to `trim_announcements_0` but applies to the second display window.
+</ParamField>
+
+## [Colors] section
+
+The `[Colors]` section defines every color tag available in `wordcolor.txt`. Default colors are written here on first run. You can change their hex values or add entirely new tags.
+
+<ParamField path="default_background" type="string" default="#000000">
+  The fallback background color used for any color tag that does not specify an explicit background. Accepts short (`#RGB`) or long (`#RRGGBB`) hex notation.
+</ParamField>
+
+<ParamField path="<tagname>" type="string">
+  Defines a named color tag. The value can be one or two space-separated hex colors:
+
+  ```ini
+  tagname = #foreground
+  tagname = #foreground #background
+  ```
+
+  - When only one value is given, `default_background` is used as the background.
+  - When two values are given, the second is used as the background for highlighted words.
+
+  The tag name is referenced directly in `wordcolor.txt` as `[colortag]`. Tag names are case-sensitive.
+
+  **Default tags and their foreground colors:**
+
+  | Tag | Foreground |
+  |---|---|
+  | `white` | `#FFFFFF` |
+  | `silver` | `#C0C0C0` |
+  | `gray` | `#808080` |
+  | `black` | `#000000` |
+  | `red` | `#FF0000` |
+  | `maroon` | `#d90000` |
+  | `yellow` | `#FFFF00` |
+  | `olive` | `#808000` |
+  | `lime` | `#00FF00` |
+  | `green` | `#008000` |
+  | `aqua` | `#00FFFF` |
+  | `teal` | `#008080` |
+  | `blue` | `#0080c0` |
+  | `navy` | `#5564ea` |
+  | `fuchsia` | `#FF00FF` |
+  | `orange` | `#ff8000` |
+</ParamField>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Filters" icon="filter" href="/configuration/filters">
+    Group and color announcements using filters.txt.
+  </Card>
+  <Card title="Word Coloring" icon="palette" href="/configuration/word-coloring">
+    Highlight specific words with custom color tags.
+  </Card>
+</CardGroup>

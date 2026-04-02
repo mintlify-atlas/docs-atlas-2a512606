@@ -1,0 +1,340 @@
+---
+title: "Filter format reference"
+description: Complete reference for the filters.txt and wordcolor.txt file formats
+---
+
+## filters.txt format
+
+Each non-blank, non-comment line in `filters.txt` must follow this syntax:
+
+```text
+[group][category] "regular_expression"
+```
+
+- **`[group]`** — sets a shared display color for every announcement that matches any expression in this group. The color applies across all windows.
+- **`[category]`** — controls per-window show/hide visibility. An empty category tag `[]` maps internally to the name `Other/All`.
+- **`"regular_expression"`** — a Python `re`-module pattern. See the [Python re documentation](https://docs.python.org/2/library/re.html) for syntax.
+
+### Parsing rules
+
+- Lines beginning with `#` are treated as comments and ignored.
+- Blank lines are ignored.
+- Multiple lines sharing the same `[group][category]` tag are OR'd together — an announcement matches the category if it satisfies **any** of those expressions.
+- An `UNKNOWN` group with a `unmatchedString` category is automatically appended after the file is loaded. It catches every announcement that did not match any earlier expression. Its default color is `#FF0`.
+
+### Matching order
+
+Groups are checked in the order of their **first appearance** in the file. Once the correct group is identified, its categories are checked sequentially from top to bottom. The first matching expression wins; subsequent expressions in the same file are not evaluated.
+
+```text
+# Matching stops at the first successful group+category hit.
+# Placing a catch-all at the top of the file would absorb everything.
+[everything][] "(.+)"
+```
+
+### Internal parsing regex
+
+The application uses the following regular expression (from `Filters.py`) to parse each filter line:
+
+```python
+\[(?P<group>\w+)\]\[(?P<category>\w+|\s*)\]\s*\"(?P<expression>.+)\"
+```
+
+Named capture groups:
+- `group` — the group tag value
+- `category` — the category tag value (may be empty/whitespace for `Other/All`)
+- `expression` — the raw regular expression string
+
+### Example lines
+
+```text
+# Comment — this line is ignored
+
+[battle_minor][hitevents_miss] "[tT]he (.+) misses [tT]he (.+)!"
+[battle_minor][hitevents_miss] "[tT]he flying (.+) misses (.+)!"
+
+# Empty category — maps to "Other/All"
+[fishing][] "[tT]here is nothing to catch in the (.+)\."
+
+# Separate group for a specific intruder type
+[intruders_Thief][intruders] "Thief!  Protect the hoard from skulking filth!"
+```
+
+---
+
+## wordcolor.txt format
+
+Each non-blank, non-comment line in `wordcolor.txt` must follow this syntax:
+
+```text
+[group][colortag] "word1,word2,word3"
+```
+
+- **`[group]`** — must match a group name from `filters.txt`. The special group `General` applies its word list to **all** announcement groups.
+- **`[colortag]`** — references a color name defined in the `[Colors]` section of `Settings.cfg`.
+- **`"word1,word2,word3"`** — a comma-separated list of words to highlight with that color. Matching is case-sensitive.
+
+### Lookup behavior
+
+When an announcement is rendered, the app first checks for a matching word in the announcement's specific group, then falls back to the `General` group. Group-specific entries supplement (rather than replace) the `General` word list.
+
+### Internal parsing regex
+
+The application uses the following regular expression (from `WordColor.py`) to parse each word-color line:
+
+```python
+\[(?P<group>\w+)\]\[(?P<colorName>\w+|\s*)\]\s*\"(?P<word_list>.+)\"
+```
+
+Named capture groups:
+- `group` — the group tag value
+- `colorName` — the color tag name (must match a key in `[Colors]`)
+- `word_list` — comma-separated word list
+
+### Example lines
+
+```text
+# General words — highlighted in all groups
+[General][red] "cancels,mandate"
+
+# Same word with different colors per group
+[battle][green] "Urist McColored"
+[masterpiece][olive] "Urist McColored"
+
+# Dwarf profession highlighting (General group)
+[General][silver] "Miner"
+[General][yellow] "Woodworker,Carpenter,Bowyer,Woodcutter"
+```
+
+---
+
+## Built-in filter categories
+
+The following groups and categories ship in the default `filters.txt`. They are listed in file order, which is also the order the filter engine checks them.
+
+<AccordionGroup>
+  <Accordion title="battle_minor — training and near-miss events">
+    | Category | Description |
+    |---|---|
+    | `hitevents_miss` | Attacks that miss, are parried, deflected, or blocked |
+    | `status` | Stun, knockdown, charge, collision, and possession-change messages |
+    | `block_dodge` | Blocks, dodges, jumps, rolls, and scramble events |
+  </Accordion>
+
+  <Accordion title="battle — active combat">
+    | Category | Description |
+    |---|---|
+    | `hitevents` | Hits that bruise, chip, shatter, fracture, tear, or strike |
+    | `status` | Vomit, stun, paralysis, exhaustion, enrage, and related combat states |
+    | `battle` | Grapples, throws, counterstrikes, rushes, grip changes, and chokehold events |
+    | `breath` | Breath attacks, webs, fire, and cloud/burst extracts |
+    | `gore` | Severed parts, opened arteries, torn tendons, and bisection events |
+    | `strikes` | Generic strike verbs (punch, hack, slash, bite, kick, etc.) |
+  </Accordion>
+
+  <Accordion title="battle_trance">
+    | Category | Description |
+    |---|---|
+    | `trance` | Entering and leaving a martial trance |
+  </Accordion>
+
+  <Accordion title="JobSuspension — suspended construction and linkage">
+    | Category | Description |
+    |---|---|
+    | `JobSuspension` | Suspended lever linkages, suspended constructions, and unreachable/blocked/submerged building sites |
+  </Accordion>
+
+  <Accordion title="Production — jobs, cancellations, and automation">
+    | Category | Description |
+    |---|---|
+    | `EquipmentMismatch` | Equipment pickup cancellations due to mismatch |
+    | `foodAndDrinkCancellations` | Cancelled drink, food, water, and traction-bench tasks |
+    | `creatureInterruption` | Tasks cancelled due to creature interruption |
+    | `production` | Completed jobs, built structures, and price alterations |
+    | `animalSlaughter` | Slaughter notifications |
+    | `farmCancellations` | Cancelled seed-planting tasks |
+    | `cancellations` | General catch-all cancellation messages |
+    | `dfhack_automation` | DFHack automation item-marking messages |
+  </Accordion>
+
+  <Accordion title="misc — noise and formatting artifacts">
+    | Category | Description |
+    |---|---|
+    | `spam` | Repeat-count indicators (`x\d+`) and whitespace-only lines |
+  </Accordion>
+
+  <Accordion title="masterpiece — artifact and quality events">
+    | Category | Description |
+    |---|---|
+    | `cooking` | Masterpiece roasts and cooked meals |
+    | `crafting` | Masterpiece crafted items |
+    | `building` | Engraved and constructed masterpieces |
+    | `writing` | Masterfully improved written works |
+    | `lost` | Lost masterwork notifications |
+  </Accordion>
+
+  <Accordion title="beekeeping">
+    | Category | Description |
+    |---|---|
+    | `beekeeping` | Bee sting events |
+  </Accordion>
+
+  <Accordion title="deaths — fatalities">
+    | Category | Description |
+    |---|---|
+    | `directDeaths` | Observed deaths by drowning, starvation, thirst, age, combat, and other causes |
+    | `foundDeaths` | Corpses found after the fact |
+  </Accordion>
+
+  <Accordion title="fishing">
+    | Category | Description |
+    |---|---|
+    | `Other/All` (empty tag) | Empty fishing location notifications |
+  </Accordion>
+
+  <Accordion title="interactions — supernatural transformations">
+    | Category | Description |
+    |---|---|
+    | `necromancy` | Necromantic gestures and reanimation |
+    | `werebeast` | Werebeast and creature transformation events |
+  </Accordion>
+
+  <Accordion title="intruders — threats and invasions">
+    | Category | Description |
+    |---|---|
+    | `beast` | Forgotten beast, titan, and other creature arrival announcements |
+    | `intruders` | Ambushes, sieges, thieves, snatchers, invasions, and destroyed structures |
+    | `ghost` | Hauntings, howling, laid-to-rest, and ghost child growth |
+  </Accordion>
+
+  <Accordion title="mandates">
+    | Category | Description |
+    |---|---|
+    | `mandates` | Construction mandates, export bans, new demands, and ended mandates |
+  </Accordion>
+
+  <Accordion title="mining — excavation and hazards">
+    | Category | Description |
+    |---|---|
+    | `enviromentalHazard` | Creatures caught in lava, magma mist, steam, and bursts |
+    | `mining` | Valuable ore strikes and raw adamantine |
+    | `cancellation` | Damp or warm stone digging cancellations |
+    | `collapse` | Cavern and surface collapses |
+    | `events` | Discovered caverns, expanses, and eerie caverns; horrifying screams |
+  </Accordion>
+
+  <Accordion title="moods — psychological states">
+    | Category | Description |
+    |---|---|
+    | `moods` | Fey moods, possessions, berserking, melancholy, and artifact creation |
+    | `depression` | Stumbling and depression events |
+    | `tantrum` | Tantrums, calming down, and tantrum-related cancellations |
+  </Accordion>
+
+  <Accordion title="named_item">
+    | Category | Description |
+    |---|---|
+    | `Other/All` (empty tag) | Attachment to items and naming/bestowal events |
+  </Accordion>
+
+  <Accordion title="missing">
+    | Category | Description |
+    |---|---|
+    | `missing` | Dwarves reported missing for a week |
+  </Accordion>
+
+  <Accordion title="life_events — social and personal milestones">
+    | Category | Description |
+    |---|---|
+    | `social` | Marriages, wedding receptions, and organized parties |
+    | `birth` | Births (boy, girl, twins, triplets) |
+    | `growth` | Children growing into peasants |
+    | `parenting` | Seeking infant and inaccessible infant cancellations |
+    | `skills` | Skill gains, rust, and legendary achievement notifications |
+  </Accordion>
+
+  <Accordion title="government — political events">
+    | Category | Description |
+    |---|---|
+    | `title` | New expedition leaders, militia commanders, mayors, and inherited positions |
+    | `elected` | Elections, re-elections, and vacant positions |
+    | `dwarfhome` | Baronies, counties, duchies, guilds, outpost founding, capital establishment, and royal satisfaction |
+    | `world_age_change` | World age transitions |
+  </Accordion>
+
+  <Accordion title="petition — agreements and recognitions">
+    | Category | Description |
+    |---|---|
+    | `guildhall` | Satisfied guildhall agreements |
+    | `temple` | Priesthood readiness notifications |
+    | `visitors` | Ignored residency or citizenship petitions |
+  </Accordion>
+
+  <Accordion title="visitors — visitor activity">
+    | Category | Description |
+    |---|---|
+    | `visit` | Visitor arrival notifications |
+    | `conversation` | Revealed presences, shared tales, and rumors |
+  </Accordion>
+
+  <Accordion title="profession">
+    | Category | Description |
+    |---|---|
+    | `professionChange` | Profession-change announcements |
+  </Accordion>
+
+  <Accordion title="migrants">
+    | Category | Description |
+    |---|---|
+    | `migrants` | Migrant wave arrivals, no-migrant seasons, and danger-defying arrivals |
+  </Accordion>
+
+  <Accordion title="animals — animal events">
+    | Category | Description |
+    |---|---|
+    | `training` | Wild reversion, forgotten training, and trainer knowledge milestones |
+    | `vermin` | Vermin gnawing out of confinement |
+    | `grown` | Animals grown into adults |
+    | `birth` | Animal births and egg hatching |
+    | `drink` | Animals guzzling beverages |
+    | `catAdoption` | Cat adoption events |
+  </Accordion>
+
+  <Accordion title="seasons">
+    | Category | Description |
+    |---|---|
+    | `seasons` | Spring, summer, autumn, winter, wet season, and dry season arrivals |
+  </Accordion>
+
+  <Accordion title="weather">
+    | Category | Description |
+    |---|---|
+    | `weather` | Rain start/stop, snow storms, and drifting clouds |
+  </Accordion>
+
+  <Accordion title="trading — caravans and diplomats">
+    | Category | Description |
+    |---|---|
+    | `trading` | Caravan arrivals, diplomat arrivals, merchant unloading/departure, bypassed wagons, and trade cancellations |
+  </Accordion>
+
+  <Accordion title="system — game session events">
+    | Category | Description |
+    |---|---|
+    | `seed` | World generation seed values |
+    | `system` | New game, world generation, new outpost, reclaim, arena, and loaded map messages |
+    | `load` | Fortress load confirmation |
+  </Accordion>
+
+  <Accordion title="emotion">
+    | Category | Description |
+    |---|---|
+    | `emotion` | Dwarf thought and emotion log entries |
+  </Accordion>
+
+  <Accordion title="UNKNOWN — automatic catch-all (auto-appended)">
+    | Category | Description |
+    |---|---|
+    | `unmatchedString` | Matches any announcement not caught by earlier filters. Color defaults to `#FF0`. This group is always appended last and cannot be removed. |
+  </Accordion>
+</AccordionGroup>

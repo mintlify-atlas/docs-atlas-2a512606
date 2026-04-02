@@ -1,0 +1,184 @@
+---
+title: "Announcement Filters"
+description: "How to configure announcement filters using the filters.txt file to group, color, and control the visibility of Dwarf Fortress log messages."
+---
+
+Announcement Window+ uses a `filters.txt` file to match game log messages against regular expressions. Each matched announcement is assigned a **group** (which controls its color) and a **category** (which controls per-window visibility). Anything that does not match a known filter is automatically caught by the built-in `UNKNOWN` group appended at the end.
+
+## Filter format
+
+Each line in `filters.txt` follows this structure:
+
+```text filters.txt
+[group][category] "regular_expression"
+```
+
+| Part | Purpose |
+|---|---|
+| `[group]` | Sets the display color for all matching announcements. The color carries across every window. |
+| `[category]` | Controls per-window visibility. Each window can show or hide a category independently. |
+| `"regular_expression"` | A Python regular expression matched against the full log line. |
+
+If the category is left empty — `[group][] "re_expression"` — the announcement is mapped to the **Other/All** bucket.
+
+<Note>
+Regular expressions follow Python `re` module syntax. See the [Python `re` documentation](https://docs.python.org/2/library/re.html) for full syntax reference.
+</Note>
+
+## How filters are evaluated
+
+Filters are checked in the order their group tags appear in the file. When a group tag is first encountered, **every** expression sharing that group is checked before moving on to the next group. Expressions within the same group and category are checked in the order they appear.
+
+The `UNKNOWN` group — with the catch-all expression `(.+)` — is automatically appended after all user-defined filters. Any announcement that does not match an earlier filter will fall through to `UNKNOWN`.
+
+<Warning>
+Adding `[everything][] "(.+)"` at the very top of the file will match every announcement. Nothing else will ever be reached. If you want a catch-all, place it at the bottom.
+</Warning>
+
+## Customizing filters
+
+### Example: splitting a group by intruder type
+
+By default, thieves and snatchers share the `[intruders]` color. To give thieves their own color, change only the group tag for the thief line:
+
+**Before:**
+```text
+[intruders][intruders] "Thief!  Protect the hoard from skulking filth!"
+```
+
+**After:**
+```text
+[intruders_Thief][intruders] "Thief!  Protect the hoard from skulking filth!"
+```
+
+The category `[intruders]` (and therefore the window visibility toggle) remains unchanged. You can then assign a new color to the `intruders_Thief` group in the Filter Configuration window.
+
+## Editing filters.txt
+
+<Steps>
+  <Step title="Open filters.txt">
+    In the main window, go to **Options → Edit filters.txt** to open the file in your system's default text editor.
+  </Step>
+  <Step title="Inspect current tags">
+    Right-click either announcement display and select **Toggle Tags** to see the `[group][category]` tags applied to each visible announcement. This helps you identify which filter line is responsible for a given message.
+  </Step>
+  <Step title="Edit or add a filter line">
+    Add or modify lines using the `[group][category] "regular_expression"` format. Lines beginning with `#` are treated as comments and ignored. Blank lines are also ignored.
+  </Step>
+  <Step title="Open Filter Configuration">
+    Go to **Options → Filter Configuration** to open the Filter Configuration window. This shows all loaded groups and categories in the same order they are evaluated, and lets you toggle per-window visibility with the **Y/N** buttons.
+  </Step>
+  <Step title="Reload">
+    Go to **Options → Reload filters.txt** to apply your changes immediately without restarting the application. The Filter Configuration window always reflects the current load order.
+  </Step>
+</Steps>
+
+## Filter categories reference
+
+The categories below are a representative selection from the default `filters.txt`. Each category can be toggled on or off independently per window in the Filter Configuration dialog.
+
+<AccordionGroup>
+  <Accordion title="battle_minor — combat training noise">
+    Categories under the `battle_minor` group cover the high-frequency messages generated during militia training. Hiding these keeps your display readable during danger room sessions.
+
+    | Category | What it matches |
+    |---|---|
+    | `hitevents_miss` | Glancing blows, deflections, parries |
+    | `status` | Charges, collisions, stuns, knockovers |
+    | `block_dodge` | Blocks, dodges, scrambles, rolls |
+  </Accordion>
+
+  <Accordion title="battle — active combat">
+    The `battle` group covers serious combat: hits that land, status effects, grappling, breath weapons, and gore.
+
+    | Category | What it matches |
+    |---|---|
+    | `hitevents` | Bruising, fracturing, severing hits |
+    | `status` | Vomiting, paralysis, enragement, unconsciousness |
+    | `battle` | Grapples, throws, chokeholds, item drops |
+    | `breath` | Fire, clouds, webs, breath attacks |
+    | `gore` | Severed parts, artery openings, tissue damage |
+    | `strikes` | Generic strike/kick/bite/hack actions |
+  </Accordion>
+
+  <Accordion title="deaths — dwarf and creature deaths">
+    | Category | What it matches |
+    |---|---|
+    | `directDeaths` | Drowning, thirst, starvation, murder, impalement, encasement |
+    | `foundDeaths` | Bodies discovered after the fact |
+  </Accordion>
+
+  <Accordion title="trading — caravans and diplomats">
+    All `trading` category messages share the `trading` group. Examples:
+
+    ```text
+    [trading][trading] "A caravan from (.+) has arrived\."
+    [trading][trading] "Merchants have arrived and are unloading their goods\."
+    [trading][trading] "[tT]he merchants from (.+) will be leaving soon\."
+    ```
+  </Accordion>
+
+  <Accordion title="seasons — season changes">
+    ```text
+    [seasons][seasons] "(Spring has arrived!)|(Spring has arrived on the calendar\.)"
+    [seasons][seasons] "(It is now summer\.)|(Summer has arrived on the calendar\.)"
+    [seasons][seasons] "(Autumn has come\.)|(Autumn has arrived on the calendar\.)"
+    [seasons][seasons] "(Winter is upon you\.)|(Winter has arrived on the calendar\.)"
+    ```
+  </Accordion>
+
+  <Accordion title="moods — dwarf moods and tantrums">
+    | Category | What it matches |
+    |---|---|
+    | `moods` | Fey moods, possessions, berserk, claimed workshops, artifact creation |
+    | `depression` | Oblivious wandering, depression |
+    | `tantrum` | Tantrum throwing and calming down |
+  </Accordion>
+
+  <Accordion title="intruders — invasions and ghosts">
+    | Category | What it matches |
+    |---|---|
+    | `beast` | Forgotten beasts and titans arriving |
+    | `intruders` | Sieges, ambushes, snatchers, thieves, dead walking |
+    | `ghost` | Ghosts haunting, put to rest, following |
+  </Accordion>
+
+  <Accordion title="mining — digging events">
+    | Category | What it matches |
+    |---|---|
+    | `mining` | Striking ore, raw adamantine |
+    | `cancellation` | Damp or warm stone cancellations |
+    | `collapse` | Cave-ins and surface collapses |
+    | `events` | Cavern discovery, eerie pits |
+    | `enviromentalHazard` | Lava pools, steam, boiling magma |
+  </Accordion>
+
+  <Accordion title="fishing — empty category (Other/All)">
+    The `[fishing]` group uses an empty category, mapping it to **Other/All**:
+
+    ```text
+    [fishing][] "[tT]here is nothing to catch in the (.+)\."
+    ```
+
+    Empty-category filters are grouped together in the Filter Configuration window under the "Other/All" label.
+  </Accordion>
+
+  <Accordion title="system — game loading and world generation">
+    | Category | What it matches |
+    |---|---|
+    | `system` | New game start, world generation, outpost loading |
+    | `load` | Fortress loaded messages |
+    | `seed` | World seed values |
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Word Coloring" icon="palette" href="/configuration/word-coloring">
+    Highlight specific words with custom colors using wordcolor.txt.
+  </Card>
+  <Card title="Settings" icon="gear" href="/configuration/settings">
+    Configure gamelog path, memory limits, and custom color definitions.
+  </Card>
+</CardGroup>

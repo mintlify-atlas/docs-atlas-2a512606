@@ -1,0 +1,167 @@
+---
+title: "Settings reference"
+description: Complete reference for all Settings.cfg options and the Data/ directory files
+---
+
+`Settings.cfg` is a standard INI-format file with two sections: `[Settings]` and `[Colors]`. It is created automatically on first launch with all defaults in place. You can edit it in any text editor; changes take effect after restarting the application or choosing **Options → Reload Settings**.
+
+## Sample Settings.cfg
+
+```ini
+[Settings]
+gamelog_path = C:\Program Files (x86)\Steam\steamapps\common\Dwarf Fortress\annc.log
+load_previous_announcements = False
+save_hidden_announcements = False
+trim_announcements_0 = 0
+trim_announcements_1 = 0
+
+[Colors]
+default_background = #000000
+white = #FFFFFF
+silver = #C0C0C0
+gray = #808080
+black = #000000
+red = #FF0000
+maroon = #d90000
+yellow = #FFFF00
+olive = #808000
+lime = #00FF00
+green = #008000
+aqua = #00FFFF
+teal = #008080
+blue = #0080c0
+navy = #5564ea
+fuchsia = #FF00FF
+orange = #ff8000
+```
+
+---
+
+## [Settings] section
+
+<ParamField path="gamelog_path" type="string">
+  Absolute path to the `annc.log` file written by the DFHack `annc-monitor` script. On first launch the application attempts to detect this path automatically.
+
+  ```ini
+  gamelog_path = C:\Program Files (x86)\Steam\steamapps\common\Dwarf Fortress\annc.log
+  ```
+
+  You can also set this interactively via **Settings → Set Directory** in the menu bar.
+</ParamField>
+
+<Note>
+  **LNP auto-detection:** when the application is launched from inside a [Lazy Newb Pack](https://github.com/Pidgeot/python-lnp) folder structure, it walks up the directory tree looking for a folder named `LNP`. Once found, it searches the parent directory for a subdirectory matching the pattern `Dwarf Fortress X.Y.Z` and reads `gamelog.txt` from there. If your setup does not match this structure, set `gamelog_path` manually.
+</Note>
+
+<ParamField path="load_previous_announcements" type="boolean" default="False">
+  When `True`, loads all announcements written to `annc.log` since the last fortress was loaded, immediately on startup. If the application is opened before loading a fortress, announcements from the previous session are shown.
+
+  ```ini
+  load_previous_announcements = True
+  ```
+</ParamField>
+
+<ParamField path="save_hidden_announcements" type="boolean" default="False">
+  When `True`, announcements whose categories are hidden in the window are still stored in memory. This allows you to reveal them later by toggling the category visible — for example, re-enabling all combat categories after a siege to review the full battle log.
+
+  When `False` (default), hidden announcements are discarded and cannot be recovered after the fact.
+
+  ```ini
+  save_hidden_announcements = True
+  ```
+</ParamField>
+
+<ParamField path="trim_announcements_0" type="integer" default="0">
+  Maximum number of announcements stored per category in **Window 0**. Once the limit is reached, the oldest announcement in that category is deleted to make room for the new one.
+
+  - `0` — keep all announcements until the window is manually cleared (default).
+  - Any positive integer — rolling limit per category.
+
+  ```ini
+  trim_announcements_0 = 2000
+  ```
+</ParamField>
+
+<ParamField path="trim_announcements_1" type="integer" default="0">
+  Maximum number of announcements stored per category in **Window 1**. Follows the same rules as `trim_announcements_0`.
+
+  Setting this to `1` turns Window 1 into a live "latest event" display: each category shows only the single most recent announcement. For example, the weather category would show only the current weather state.
+
+  ```ini
+  trim_announcements_1 = 1
+  ```
+</ParamField>
+
+---
+
+## [Colors] section
+
+The `[Colors]` section defines the color tags that can be referenced in `wordcolor.txt`.
+
+<ParamField path="default_background" type="string">
+  Default background color applied to any color tag that does not specify its own background. Accepts `#RGB` or `#RRGGBB` hex format.
+
+  ```ini
+  default_background = #000000
+  ```
+</ParamField>
+
+### Custom color tags
+
+Any additional key under `[Colors]` defines a named color tag. The format is:
+
+```ini
+tagname = #foreground #background
+```
+
+The background value is optional. When omitted, `default_background` is used.
+
+```ini
+# Foreground only — background falls back to default_background
+red = #FF0000
+
+# Foreground and explicit background
+alert = #FF0000 #1a0000
+```
+
+The tag name (e.g., `red`, `alert`) is what you reference in `wordcolor.txt` as the `[colortag]` value.
+
+### Default built-in colors
+
+These colors are written to `Settings.cfg` automatically on first launch. You can change their hex values.
+
+| Tag name | Foreground hex | Background hex |
+|---|---|---|
+| `white` | `#FFFFFF` | `#000000` |
+| `silver` | `#C0C0C0` | `#000000` |
+| `gray` | `#808080` | `#000000` |
+| `black` | `#000000` | `#000000` |
+| `red` | `#FF0000` | `#000000` |
+| `maroon` | `#d90000` | `#000000` |
+| `yellow` | `#FFFF00` | `#000000` |
+| `olive` | `#808000` | `#000000` |
+| `lime` | `#00FF00` | `#000000` |
+| `green` | `#008000` | `#000000` |
+| `aqua` | `#00FFFF` | `#000000` |
+| `teal` | `#008080` | `#000000` |
+| `blue` | `#0080c0` | `#000000` |
+| `navy` | `#5564ea` | `#000000` |
+| `fuchsia` | `#FF00FF` | `#000000` |
+| `orange` | `#ff8000` | `#000000` |
+
+---
+
+## Data/ directory files
+
+The `Data/` directory is created automatically alongside the application and stores persistent runtime state.
+
+| File | Format | Contents |
+|---|---|---|
+| `Data/filters.dat` | JSON | Filter visibility state: group colors and per-window show/hide flags for every category. Written when the Filters Configuration window is closed. |
+| `Data/gui.dat` | Python pickle | GUI layout state: sash position (divider between the two windows) and font settings for each window. Written on clean exit. |
+| `Data/favicon.ico` | ICO | Application icon used on Windows. |
+| `Data/favicon.XBM` | XBM | Application icon used on Linux. |
+
+<Note>
+  `Data/filters.dat` is read on startup and merged with the expressions loaded from `filters.txt`. If a group or category present in `filters.dat` no longer exists in `filters.txt`, it is silently ignored. Deleting `Data/filters.dat` resets all visibility and color choices to defaults.
+</Note>

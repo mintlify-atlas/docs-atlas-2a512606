@@ -1,0 +1,129 @@
+---
+title: "Installation"
+description: "How to install Announcement Window+ on Windows, macOS, and Linux, and how to configure DFHack to generate the announcement log."
+---
+
+Announcement Window+ can be installed as a pre-built Windows executable or run directly from Python source on any platform. Either way, DFHack must also be installed and configured to produce the log file the application reads.
+
+## Install Announcement Window+
+
+<Tabs>
+  <Tab title="Windows (.exe)">
+    <Steps>
+      <Step title="Download the latest release">
+        Go to the [Announcement Window+ releases page](https://github.com/dgomiller/AnnouncementWindow/releases) and download the latest `.zip` file.
+      </Step>
+      <Step title="Extract the archive">
+        Unzip the folder anywhere on your computer.
+      </Step>
+      <Step title="Launch the application">
+        Open the extracted folder and double-click `AnnouncementWindow.exe`.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Python (any platform)">
+    <Steps>
+      <Step title="Install Python">
+        Ensure Python 2.7+ or Python 3 is installed on your system. Python 3 is recommended.
+      </Step>
+      <Step title="Download the repository">
+        Clone or download the [AnnouncementWindow repository](https://github.com/dgomiller/AnnouncementWindow) to your computer.
+      </Step>
+      <Step title="Run the application">
+        From the repository directory, run:
+
+        ```bash
+        python run.py
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## Configure DFHack
+
+Announcement Window+ reads from `annc.log`, which is written by the DFHack `annc-monitor` script. You need to install DFHack, patch the monitor script to enable file logging, and tell DFHack to start the monitor automatically on map load.
+
+### Install DFHack
+
+<Tabs>
+  <Tab title="Steam">
+    Install DFHack through the Steam store:
+
+    [DFHack – Dwarf Fortress Modding Engine](https://store.steampowered.com/app/2346660/DFHack__Dwarf_Fortress_Modding_Engine/)
+
+    Once installed, DFHack launches automatically alongside Dwarf Fortress.
+  </Tab>
+  <Tab title="Manual">
+    Download the appropriate release for your platform from the [DFHack releases page](https://github.com/DFHack/dfhack/releases) and follow the installation instructions for your OS.
+  </Tab>
+</Tabs>
+
+### Enable file logging in annc-monitor
+
+<Warning>
+  You must run Dwarf Fortress with DFHack installed at least once before editing config files. DFHack generates the config directories on first launch.
+</Warning>
+
+<Steps>
+  <Step title="Locate annc-monitor.lua">
+    Navigate to the `hack\scripts\devel` folder inside your Dwarf Fortress install directory.
+
+    The default Steam path on Windows is:
+
+    ```
+    C:\Program Files (x86)\Steam\steamapps\common\Dwarf Fortress\hack\scripts\devel
+    ```
+
+    Open `annc-monitor.lua` in a text editor.
+  </Step>
+  <Step title="Replace the log function">
+    Find the existing `log` function:
+
+    ```lua
+    function log(s, color)
+        dfhack.color(color)
+        print(dfhack.df2console(s))
+        dfhack.color(COLOR_RESET)
+    end
+    ```
+
+    Replace it with the version below, which appends each announcement to `annc.log`:
+
+    ```lua
+    function log(s, color)
+            dfhack.color(color)
+            print(dfhack.df2console(s))
+    	file = io.open("annc.log", "a")
+    	file:write(s)
+    	file:write("\n")
+    	file:close()
+            dfhack.color(COLOR_RESET)
+    end
+    ```
+  </Step>
+  <Step title="Save the file">
+    Save `annc-monitor.lua` and close the text editor.
+  </Step>
+  <Step title="Configure DFHack to start the monitor on map load">
+    Navigate to the `dfhack-config\init` folder in your Dwarf Fortress install. The default Steam path is:
+
+    ```
+    C:\Program Files (x86)\Steam\steamapps\common\Dwarf Fortress\dfhack-config\init
+    ```
+
+    Open `onLoad.init` in a text editor and add the following line at the bottom:
+
+    ```
+    devel/annc-monitor start
+    ```
+
+    Save the file. DFHack will now start logging announcements to `annc.log` every time you load a fortress.
+  </Step>
+</Steps>
+
+<Note>
+  `annc.log` is created in your Dwarf Fortress directory the first time you load a fortress after completing the steps above. If the file does not exist yet, start a new or existing fortress in-game and it will be generated automatically.
+</Note>
+
+Once DFHack is configured, continue to [First-time setup](/setup) to connect Announcement Window+ to your Dwarf Fortress install.
